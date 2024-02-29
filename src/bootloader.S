@@ -10,11 +10,55 @@ start:
 	mov ss, ax
 	mov sp, start
 
+get_character:
+
+	mov bx, offset ABC
+	call puts
+
+	mov ah, 0x0
+	int 0x16
+
+	cmp ah, 0x1c
+	je load_kernel
+
+	cmp al, 'a'
+	jl get_character
+
+	cmp al, 'z'
+	jg get_character
+
+	mov bx, offset ABC
+
+	sub al, 'a'
+	mov ah, 0x0
+	add bx, ax
+
+	mov ah, [bx]
+	cmp ah, '_'
+	jne set_lowline
+
+	mov ah, al
+	add ah, 'a'
+	mov [bx], ah
+
+	jmp set_lowline_done
+
+set_lowline:
+
+	mov ah, '_'
+	mov [bx], ah
+
+set_lowline_done:
+
+	jmp get_character
+
 load_kernel:
 
 	mov [BOOT_DRIVE], dl
 
 	mov bx, 0x1000
+	mov es, bx
+	mov bx, 0x0
 	mov dh, 15
 	mov dl, [BOOT_DRIVE]
 
@@ -43,6 +87,22 @@ entering:
 
 	jmp 0x8:protected_mode
 
+puts:
+
+	mov al, [bx]
+	test al, al
+	jz end_puts
+
+	mov ah, 0x0e
+	int 0x10
+
+	add bx, 1
+
+	jmp puts
+	
+	end_puts:
+	
+	ret
 
 .code32
 
@@ -55,18 +115,15 @@ protected_mode:
 	mov fs, ax
 	mov gs, ax
 
-	mov edi, 0xb8000
-	mov esi, offset MSG_PROT_MODE
-	call print
+running_kernel:
 
-	call 0x1000
+	call 0x10000
 
 loop:
 	hlt
 	jmp loop
 
 .include "print.S"
-
 
 MSG_PROT_MODE:
 	.asciz "Successfully landed in 32-bit Protected Mode"
@@ -83,5 +140,11 @@ gdt_info:
 	.word gdt_info - gdt
 	.word gdt, 0
 
+.zero 450 - ($ - start)
+
+ABC:
+	.asciz "abcdefghijklmnopqrstuvwxyz\n\r"
+
 .zero 510 - ($ - start)
+
 .word 0xaa55

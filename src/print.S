@@ -1,3 +1,4 @@
+
 print:
 	mov al, [esi]
 	test al, al
