@@ -3,6 +3,7 @@
 #include "string.h"
 
 #define VIDEO_MEMORY_PTR 0xb8000
+#define VIDEO_MEMORY_OVERBUF 0xb8000 + 2000
 #define ALPHABET_PTR 0x7c00 + 0x1c2
 #define IDT_TYPE_INTR 0x0e
 #define IDT_TYPE_TRAP 0x0f
@@ -12,12 +13,16 @@
 
 __asm("jmp kmain;");
 
+int input_counter;
+char input_buffer[41];
+
 char scancodes[128];
 
 void scancodes_init() {
 
-	scancodes[0x00] = NULL;
-	scancodes[0x01] = NULL;
+	for (int i = 0; i < 128; i++)
+		scancodes[i] = NULL;
+
 	scancodes[0x02] = '1';
 	scancodes[0x03] = '2';
 	scancodes[0x04] = '3';
@@ -28,6 +33,39 @@ void scancodes_init() {
 	scancodes[0x09] = '8';
 	scancodes[0x0A] = '9';
 	scancodes[0x0B] = '0';
+	scancodes[0x1E] = 'a';
+	scancodes[0x30] = 'b';
+	scancodes[0x2E] = 'c';
+	scancodes[0x20] = 'd';
+	scancodes[0x12] = 'e';
+	scancodes[0x21] = 'f';
+	scancodes[0x22] = 'g';
+	scancodes[0x23] = 'h';
+	scancodes[0x17] = 'i';
+	scancodes[0x24] = 'j';
+	scancodes[0x25] = 'k';
+	scancodes[0x26] = 'l';
+	scancodes[0x32] = 'm';
+	scancodes[0x31] = 'n';
+	scancodes[0x18] = 'o';
+	scancodes[0x19] = 'p';
+	scancodes[0x10] = 'q';
+	scancodes[0x13] = 'r';
+	scancodes[0x1F] = 's';
+	scancodes[0x14] = 't';
+	scancodes[0x16] = 'u';
+	scancodes[0x2F] = 'v';
+	scancodes[0x11] = 'w';
+	scancodes[0x2D] = 'x';
+	scancodes[0x15] = 'y';
+	scancodes[0x2C] = 'z';
+	scancodes[0x39] = ' ';
+	scancodes[0x4E] = '+';
+	scancodes[0x4A] = '-';
+	scancodes[0x35] = '/';
+	scancodes[0x37] = '*';
+	scancodes[0x1C] = '\n';
+	scancodes[0x0E] = 0x8;
 	
 }
 
@@ -46,9 +84,63 @@ struct idt_ptr {
 } __attribute__((packed));
 
 
-char *video_memory;
+char *cursor;
 struct idt_entry g_idt[256];
 struct idt_ptr g_idtp;
+
+void clean_screen() {
+
+	__asm(
+		"mov ebx, 0xb8000;"
+		"xor ax, ax;"
+		"xor ecx, ecx;"
+		"clean_screen_loop:"
+		"mov [ebx], ax;"
+		"add ebx, 2;"
+		"inc ecx;"
+		"cmp ecx, 2000;"
+		"jl clean_screen_loop;"
+		:
+		:
+		: "ebx", "ecx", "ax"
+	);
+
+}
+
+void put_symbol(const char symbol) {
+
+	if (cursor == (char *) VIDEO_MEMORY_OVERBUF)
+		clean_screen();
+
+	switch (symbol) {
+		case '\n':
+			cursor = (char *) VIDEO_MEMORY_PTR + ((cursor - (char *) VIDEO_MEMORY_PTR) / 160 + 1) * 160;
+			break;
+		case 0x08:
+			*(cursor--) = 0x0;
+			*(cursor--) = 0x0;
+			break;
+		default:
+			*(cursor++) = symbol;
+			*(cursor++) = 0x07;
+			break;
+	}
+
+}
+
+void puts(const char *string) {
+
+	if (string == NULL)
+		return;
+
+	while (*string != 0) {
+
+		put_symbol(*string);
+
+		string += 1;
+	}
+
+}
 
 void default_intr_handler() {
 	__asm("pusha;");
@@ -96,25 +188,6 @@ void intr_disable() {
 	__asm("cli;");
 }
 
-void clean_screen() {
-
-	__asm(
-		"mov ebx, 0xb8000;"
-		"xor ax, ax;"
-		"xor ecx, ecx;"
-		"clean_screen_loop:"
-		"mov [ebx], ax;"
-		"add ebx, 2;"
-		"inc ecx;"
-		"cmp ecx, 2000;"
-		"jl clean_screen_loop;"
-		:
-		:
-		: "ebx", "ecx", "ax"
-	);
-
-}
-
 static inline unsigned char inb (unsigned short port) {
 	unsigned char data;
 	__asm volatile ("inb %b0, %w1" : "=a" (data) : "Nd" (port));
@@ -127,15 +200,44 @@ static inline void outb (unsigned short port, unsigned char data) {
 
 void on_key(unsigned char scan_code) {
 
-	video_memory = (char *) VIDEO_MEMORY_PTR;
-
 	char key = scancodes[scan_code];
 
 	if (key == NULL)
 		return;
 
-	*(video_memory) = key;
-	*(video_memory + 1) = 0x07;
+	if (key == 0x08 && input_counter == 0)
+		return;
+
+	if (key != 0x08 && key != '\n' && input_counter == 40)
+		return;
+
+	if (key == 0x08) {
+		input_buffer[input_counter] = 0;
+		input_counter -= 1;
+	}
+	
+	if (key != 0x08 && key != '\n') {
+		input_buffer[input_counter] = key;
+		input_counter += 1;
+	}
+
+	put_symbol(key);
+
+	if (key == '\n') {
+
+		input_buffer[input_counter] = 0;
+
+		if (!strcmp("info", input_buffer)) {
+			puts("TEST\n");
+		} else {
+			puts("No command was entered or there was a mistake in one\n");
+		}
+
+		input_counter = 0;
+
+		puts("> ");
+
+	}
 	
 }
 
@@ -166,6 +268,10 @@ void keyb_init() {
 
 void kmain() {
 
+	input_counter = 0;
+	input_buffer[40] = 0;
+	input_buffer[0] = 0;
+
 	intr_init();
 	keyb_init();
 	scancodes_init();
@@ -173,15 +279,14 @@ void kmain() {
 	intr_start();
 	intr_enable();
 
-	video_memory = (char *) VIDEO_MEMORY_PTR;
+	cursor = (char *) VIDEO_MEMORY_PTR;
 
 	clean_screen();
 
-	char hello[30] = "HELLO FROM C KERNEL B!!!";
+	char hello[30] = "HELLO FROM C KERNEL B!!!\n";
 	
-	for (int i = 0; i < 30; i++) {
-		*(video_memory + i * 2) = hello[i];
-		*(video_memory + i * 2 + 1) = 0x07;
-	}
+	puts(hello);
+
+	puts("> ");
 
 }
