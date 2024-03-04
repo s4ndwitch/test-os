@@ -59,7 +59,7 @@ load_kernel:
 	mov bx, 0x1000
 	mov es, bx
 	mov bx, 0x0
-	mov dh, 15
+	mov dh, 30
 	mov dl, [BOOT_DRIVE]
 
 	push dx
@@ -119,11 +119,21 @@ running_kernel:
 
 	call 0x10000
 
-loop:
-	hlt
-	jmp loop
+	mov edx, 0xb8000
+	mov al, 'T'
+	mov ah, 0x07
+	mov [edx], ax
+	
+	jmp shutdown
 
-.include "print.S"
+.code16
+shutdown:
+
+	mov eax, cr0
+	xor al, al
+	mov cr0, eax
+
+	int 0x80
 
 MSG_PROT_MODE:
 	.asciz "Successfully landed in 32-bit Protected Mode"

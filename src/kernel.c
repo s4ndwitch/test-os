@@ -3,7 +3,7 @@
 #include "string.h"
 
 #define VIDEO_MEMORY_PTR 0xb8000
-#define VIDEO_MEMORY_OVERBUF 0xb8000 + 2000
+#define VIDEO_MEMORY_OVERBUF 0xb8000 + 4000
 #define ALPHABET_PTR 0x7c00 + 0x1c2
 #define IDT_TYPE_INTR 0x0e
 #define IDT_TYPE_TRAP 0x0f
@@ -105,6 +105,8 @@ void clean_screen() {
 		: "ebx", "ecx", "ax"
 	);
 
+	cursor = (char *) VIDEO_MEMORY_PTR;
+
 }
 
 void put_symbol(const char symbol) {
@@ -138,6 +140,275 @@ void puts(const char *string) {
 		put_symbol(*string);
 
 		string += 1;
+	}
+
+}
+
+char *dictionary[52][2];
+int dictionary_count;
+
+void init_dictionary() {
+
+	char *alphabet = (char *) ALPHABET_PTR;
+
+	if (alphabet[0] != '_') {
+
+		dictionary[dictionary_count][0] = "air";
+		dictionary[dictionary_count++][1] = "aire";
+
+		dictionary[dictionary_count][0] = "alphabet";
+		dictionary[dictionary_count++][1] = "alfabeto";
+
+	}
+
+	if (alphabet[1] != '_') {
+
+		dictionary[dictionary_count][0] = "belligerent";
+		dictionary[dictionary_count++][1] = "beligerante";
+
+		dictionary[dictionary_count][0] = "bestial";
+		dictionary[dictionary_count++][1] = "bestial";
+
+	}
+
+	if (alphabet[2] != '_') {
+
+		dictionary[dictionary_count][0] = "campus";
+		dictionary[dictionary_count++][1] = "campus";
+		
+		dictionary[dictionary_count][0] = "candidate";
+		dictionary[dictionary_count++][1] = "candidato";
+
+	}
+
+	if (alphabet[3] != '_') {
+
+		dictionary[dictionary_count][0] = "dictate";
+		dictionary[dictionary_count++][1] = "dictar";
+
+		dictionary[dictionary_count][0] = "dominate";
+		dictionary[dictionary_count++][1] = "dominar";
+
+	}
+
+	if (alphabet[4] != '_') {
+
+		dictionary[dictionary_count][0] = "effect";
+		dictionary[dictionary_count++][1] = "efecto";
+
+		dictionary[dictionary_count][0] = "emperor";
+		dictionary[dictionary_count++][1] = "emperador";
+
+	}
+
+	if (alphabet[5] != '_') {
+
+		dictionary[dictionary_count][0] = "feminine";
+		dictionary[dictionary_count++][1] = "femenino";
+
+		dictionary[dictionary_count][0] = "figure";
+		dictionary[dictionary_count++][1] = "figura";
+
+	}
+
+	if (alphabet[6] != '_') {
+
+		dictionary[dictionary_count][0] = "generate";
+		dictionary[dictionary_count++][1] = "generar";
+
+		dictionary[dictionary_count][0] = "gladiator";
+		dictionary[dictionary_count++][1] = "gladiador";
+
+	}
+
+	if (alphabet[7] != '_') {
+
+		dictionary[dictionary_count][0] = "herb";
+		dictionary[dictionary_count++][1] = "hierba";
+		
+		dictionary[dictionary_count][0] = "hour";
+		dictionary[dictionary_count++][1] = "hora";
+
+	}
+
+	if (alphabet[8] != '_') {
+
+		dictionary[dictionary_count][0] = "illuminate";
+		dictionary[dictionary_count++][1] = "iluminar";
+
+		dictionary[dictionary_count][0] = "initial";
+		dictionary[dictionary_count++][1] = "inicial";
+
+	}
+
+	if (alphabet[9] != '_') {
+
+		dictionary[dictionary_count][0] = "judicial";
+		dictionary[dictionary_count++][1] = "judicial";
+
+		dictionary[dictionary_count][0] = "juvenile";
+		dictionary[dictionary_count++][1] = "juvenil";
+
+	}
+
+	if (alphabet[10] != '_') {
+
+		dictionary[dictionary_count][0] = "keep";
+		dictionary[dictionary_count++][1] = "mantener";
+
+		dictionary[dictionary_count][0] = "key";
+		dictionary[dictionary_count++][1] = "clave";
+
+	}
+
+	if (alphabet[11] != '_') {
+
+		dictionary[dictionary_count][0] = "legal";
+		dictionary[dictionary_count++][1] = "legal";
+
+		dictionary[dictionary_count][0] = "latitude";
+		dictionary[dictionary_count++][1] = "latitud";
+
+	}
+
+	if (alphabet[12] != '_') {
+
+		dictionary[dictionary_count][0] = "major";
+		dictionary[dictionary_count++][1] = "mayor";
+		
+		dictionary[dictionary_count][0] = "marine";
+		dictionary[dictionary_count++][1] = "marina";
+
+	}
+
+	if (alphabet[13] != '_') {
+
+		dictionary[dictionary_count][0] = "nominal";
+		dictionary[dictionary_count++][1] = "nominal";
+
+		dictionary[dictionary_count][0] = "note";
+		dictionary[dictionary_count++][1] = "nota";
+
+	}
+
+	if (alphabet[14] != '_') {
+
+		dictionary[dictionary_count][0] = "ocular";
+		dictionary[dictionary_count++][1] = "ocular";
+
+		dictionary[dictionary_count][0] = "ovine";
+		dictionary[dictionary_count++][1] = "ovino";
+
+	}
+
+	if (alphabet[15] != '_') {
+
+		dictionary[dictionary_count][0] = "perfect";
+		dictionary[dictionary_count++][1] = "perfecto";
+		
+		dictionary[dictionary_count][0] = "popular";
+		dictionary[dictionary_count++][1] = "popular";
+
+	}
+
+	if (alphabet[16] != '_') {
+
+		dictionary[dictionary_count][0] = "quant";
+		dictionary[dictionary_count++][1] = "cuant";
+
+		dictionary[dictionary_count][0] = "quarantine";
+		dictionary[dictionary_count++][1] = "cuarentena";
+
+	}
+
+	if (alphabet[17] != '_') {
+
+		dictionary[dictionary_count][0] = "resist";
+		dictionary[dictionary_count++][1] = "resistir";
+
+		dictionary[dictionary_count][0] = "rational";
+		dictionary[dictionary_count++][1] = "racional";
+
+	}
+
+	if (alphabet[18] != '_') {
+
+		dictionary[dictionary_count][0] = "sacrament";
+		dictionary[dictionary_count++][1] = "sacramento";
+
+		dictionary[dictionary_count][0] = "sapient";
+		dictionary[dictionary_count++][1] = "sapiente";
+
+	}
+
+	if (alphabet[19] != '_') {
+
+		dictionary[dictionary_count][0] = "tempo";
+		dictionary[dictionary_count++][1] = "tempo";
+
+		dictionary[dictionary_count][0] = "terrain";
+		dictionary[dictionary_count++][1] = "terreno";
+
+	}
+
+	if (alphabet[20] != '_') {
+
+		dictionary[dictionary_count][0] = "unite";
+		dictionary[dictionary_count++][1] = "unir";
+		
+		dictionary[dictionary_count][0] = "urban";
+		dictionary[dictionary_count++][1] = "urbano";
+
+	}
+
+	if (alphabet[21] != '_') {
+
+		dictionary[dictionary_count][0] = "vast";
+		dictionary[dictionary_count++][1] = "vasto";
+
+		dictionary[dictionary_count][0] = "verbal";
+		dictionary[dictionary_count++][1] = "verbal";
+
+	}
+
+	if (alphabet[22] != '_') {
+
+		dictionary[dictionary_count][0] = "word";
+		dictionary[dictionary_count++][1] = "palabra";
+
+		dictionary[dictionary_count][0] = "world";
+		dictionary[dictionary_count++][1] = "mundo";
+
+	}
+
+	if (alphabet[23] != '_') {
+
+		dictionary[dictionary_count][0] = "xerox";
+		dictionary[dictionary_count++][1] = "xerox";
+
+		dictionary[dictionary_count][0] = "xylene";
+		dictionary[dictionary_count++][1] = "xileno";
+
+	}
+
+	if (alphabet[24] != '_') {
+
+		dictionary[dictionary_count][0] = "yay";
+		dictionary[dictionary_count++][1] = "yay";
+
+		dictionary[dictionary_count][0] = "yesterday";
+		dictionary[dictionary_count++][1] = "ayer";
+
+	}
+
+	if (alphabet[25] != '_') {
+
+		dictionary[dictionary_count][0] = "zero";
+		dictionary[dictionary_count++][1] = "cero";
+		
+		dictionary[dictionary_count][0] = "zoom";
+		dictionary[dictionary_count++][1] = "zoom";
+
 	}
 
 }
@@ -198,6 +469,66 @@ static inline void outb (unsigned short port, unsigned char data) {
 	__asm volatile ("outb %w1, %b0" : : "a" (data), "Nd" (port));
 }
 
+static inline void outw (unsigned short port, unsigned short data) {
+	__asm volatile ("outw %w1, %w0" : : "a" (data), "Nd" (port));
+}
+
+void put_number(int number) {
+
+	if (number == 0) {
+		put_symbol('0');
+		return;
+	}
+
+	int temp = number;
+	int count = 0;
+
+	while (temp != 0) {
+		temp /= 10;
+		count += 1;
+	}
+
+	int array[count];
+	temp = count;
+
+	while (count--) {
+		array[count] = number % 10;
+		number /= 10;
+	}
+
+	for (int i = 0; i < temp; i++)
+		put_symbol(array[i] + '0');
+
+}
+
+int strlen(char *a) {
+
+	int result = 0;
+
+	while (*(a++))
+		result += 1;
+
+	return result;
+
+}
+
+int starts_with(char *a, char *b) {
+
+	int length = strlen(a);
+	int compare = strlen(b);
+
+	if (length > compare)
+		return -1;
+
+	char copy[length + 1];
+	copy[length] = 0;
+	for (int i = 0; i < length; i++)
+		copy[i] = b[i];
+
+	return strcmp(a, copy);
+
+}
+
 void on_key(unsigned char scan_code) {
 
 	char key = scancodes[scan_code];
@@ -228,10 +559,65 @@ void on_key(unsigned char scan_code) {
 		input_buffer[input_counter] = 0;
 
 		if (!strcmp("info", input_buffer)) {
-			puts("TEST\n");
-		} else {
+			puts("DictOS: final edition (hopefully).\nDeveloper: Daniel Bialokon, " \
+					"5131001/20002, SpbPU, 2024\nCompilers: bootloader: as, kernel: gcc\n"\
+					"Bootloader parameters: ");
+			for (int i = 0; i < 26; i++) {
+				put_symbol(*((char *) ALPHABET_PTR + i));
+			}
+			puts("\n");
+		} else if (!strcmp("shutdown", input_buffer)) {
+			outw(0xb004, 0x2000);
+			outw(0x604, 0x2000);
+		} else if (!strcmp("dictinfo", input_buffer)) {
+			puts("Dictionary: en -> es\nNumber of words: ");
+			put_number(52);
+			puts("\nNumber of loaded words: ");
+			put_number(dictionary_count);
+			puts("\n");
+		} else if (!starts_with("wordstat ", input_buffer)) {
+			if (strlen(input_buffer) == 10) {
+				int result = 0;
+				for (int i = 0; i < dictionary_count; i++)
+					if (dictionary[i][0][0] == input_buffer[9])
+						result += 1;
+				puts("Letter \'");
+				put_symbol(input_buffer[9]);
+				puts("\': ");
+				put_number(result);
+				puts("\n");
+			}
+		} else if (!starts_with("translate ", input_buffer)) {
+			int length = strlen(input_buffer) - 10;
+			char word[length + 1], found = 0;
+
+			for (int i = 0; i < length; i++)
+				word[i] = input_buffer[i + 10];
+
+			word[length] = 0;
+			
+			int left = 0, mid, result;
+			int right = dictionary_count - 1;
+			while (left <= right) {
+				mid = (left + right) / 2;
+				result = strcmp(dictionary[mid][0], word);
+				if (result < 0)
+					left = mid + 1;
+				else if (result > 0)
+					right = mid - 1;
+				else {
+					found = 1;
+					break;
+				}
+
+			}
+			if (found) {
+				puts(dictionary[mid][1]);
+				puts("\n");
+			} else
+				puts("This word is not found :(\n");
+		} else
 			puts("No command was entered or there was a mistake in one\n");
-		}
 
 		input_counter = 0;
 
@@ -272,6 +658,9 @@ void kmain() {
 	input_buffer[40] = 0;
 	input_buffer[0] = 0;
 
+	dictionary_count = 0;
+	init_dictionary();
+
 	intr_init();
 	keyb_init();
 	scancodes_init();
@@ -281,6 +670,11 @@ void kmain() {
 
 	cursor = (char *) VIDEO_MEMORY_PTR;
 
+	outb(0x3D4, 0x0F);
+	outb(0x3D4 + 1, (unsigned char)((26 * 80) & 0xFF));
+	outb(0x3d4, 0x0E);
+	outb(0x3d4 + 1, (unsigned char)(((26 * 80) >> 8) & 0xFF));
+
 	clean_screen();
 
 	char hello[30] = "HELLO FROM C KERNEL B!!!\n";
@@ -288,5 +682,7 @@ void kmain() {
 	puts(hello);
 
 	puts("> ");
+
+	while (1);
 
 }
